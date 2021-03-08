@@ -28,17 +28,14 @@ public class Boosting {
         testMatrix = getMatrixDouble(testData);
         dictionaryMatrix = getDictionary(dictionaryData);
         ArrayList<Integer> iterations = new ArrayList<Integer>();
-        //iterations.add(3);
+        iterations.add(3);
         iterations.add(4);
-        //iterations.add(7);iterations.add(10);iterations.add(15);iterations.add(20);
+        iterations.add(7);
+        iterations.add(10);iterations.add(15);iterations.add(20);
         
-        for(int i = 0; i < iterations.size();i++) {
-        	boosting(iterations.get(i) - 1);
-        	System.out.println("iteration " + iterations.get(i) + " training E: " + getError(trainingMatrix) + " test E: " + getError(testMatrix));
-        	if(iterations.get(i) == 10) {
-        		getWords();
-        	}
-        }
+        boosting(iterations);
+
+        
         
         
 	}
@@ -58,18 +55,23 @@ public class Boosting {
 		double errorCount = 0;
 		for(int i = 0; i < matrix.size(); i++) {
 			double sign = 0;
+
 			for(int j = 0; j < aList.size(); j++) {
-				sign += (aList.size() * getHLabel(hClassifiers.get(j),dictionaryHIndices.get(j),matrix.get(i)));
+				
+				sign += (aList.get(j) * getHLabel(hClassifiers.get(j),dictionaryHIndices.get(j),matrix.get(i)));
 			}
 			double actualLabel = matrix.get(i)[matrix.get(i).length - 1];
+			
 			if((sign > 0.0 && 1.0 != actualLabel) || (sign < 0.0 && -1.0 != actualLabel) ) {
 				errorCount++;
+			}else {
+				
 			}
 		}
 		return errorCount / matrix.size();
 	}
 	
-	public static void boosting(int iterations) {
+	public static void boosting(ArrayList<Integer> iterations) {
 		//hPlus == 1 
 		aList = new ArrayList<>();
 		hClassifiers = new ArrayList<>();
@@ -78,15 +80,15 @@ public class Boosting {
 		for(int i = 0; i < trainingMatrix.size();i++) {
 			weights.add(1.0/(double)trainingMatrix.size());
 		}
-		for(int i = 0; i < iterations;i++) {
+		for(int i = 0; i < iterations.get(iterations.size() - 1);i++) {
 			double Et = getWeakLearner(weights);
 			int h = Et >= 0 ? 1 : -1;
-			System.out.println(Et);
+			//System.out.println(Et);
 			Et = h * Et;
 			double temp = Math.floor(Et);
 			int dictionaryIndex = (int)temp;
 			Et = Et - temp;
-			System.out.println(Et);
+//			System.out.println(Et);
 			
 			double At = 0.5 * Math.log((1-Et)/Et);//closer to 0, bigger At is 
 			double Z = 0.0;
@@ -102,7 +104,13 @@ public class Boosting {
 			aList.add(At);
 			hClassifiers.add(h);
 			dictionaryHIndices.add(dictionaryIndex);
-							
+			if(iterations.contains(i+1)) {
+	        	System.out.println("iteration " + (i+1) + " training E: " + getError(trainingMatrix) + " test E: " + getError(testMatrix));
+	        	if( i + 1== 10) {
+	        		getWords();
+	        	}
+			}
+		
 		}
 		
 		
@@ -113,6 +121,7 @@ public class Boosting {
 		if(h == 1) {
 			return row[dictionaryIndex] == 1.0 ? 1 : -1;
 		}else {
+			//System.out.print("hlabel " + (row[dictionaryIndex] == 0.0 ? 1 : -1));
 			return row[dictionaryIndex] == 0.0 ? 1 : -1;
 		}
 	}
@@ -147,6 +156,9 @@ public class Boosting {
 				leastError = Math.min(errorHMinus, errorHPlus);
 				hPlus = leastError == errorHPlus ? 1 : -1;
 			}
+		}
+		if(leastError >= 0.5) {
+		System.out.println("leastError " + leastError);
 		}
 		return hPlus * (dictionaryIndex + leastError);
 	}
