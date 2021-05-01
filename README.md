@@ -1,4 +1,4 @@
-# CSE-151-Project5
+# CSE-151-Project5 -Machine Learning Boosting
 In this assignment, we will look at the task of spam classification using boosting. Our raw data is a set
 of emails, which were collected from a liguistics mailing list; the emails are labeled as spam or not spam.
 For your benefit, we have already preprocessed the emails to remove stop-words, punctuation, and to do
